@@ -1,5 +1,6 @@
 package com.lvqingyang.designpatterns.imageloader;
 
+import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,23 +23,23 @@ import java.util.concurrent.Executors;
  * @blog https://biloba123.github.io/
  */
 public class ImageLoader {
-    private Context mAppContext;
-    private BitmapCache mBitmapCache;
+    private Application mAppContext;
+    private ImageCache mImageCache;
     private ExecutorService mExecutor;
     private static volatile ImageLoader sImageLoader;
     private static final String TAG = "ImageLoader";
     private Handler mHandler;
 
     private ImageLoader(Context context){
-        mAppContext=context.getApplicationContext();
-        mBitmapCache=BitmapCache.getInstance();
+        mAppContext= (Application) context.getApplicationContext();
+        mImageCache=new DoubleCache(context);
         mExecutor= Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         mHandler=new Handler(mAppContext.getMainLooper()){
             @Override
             public void handleMessage(Message msg) {
                 if (msg.obj != null) {
                     ImageView iv=(ImageView)msg.obj;
-                    iv.setImageBitmap(mBitmapCache.get((String) iv.getTag()));
+                    iv.setImageBitmap(mImageCache.get((String) iv.getTag()));
                 }
             }
         };
@@ -61,7 +62,7 @@ public class ImageLoader {
             return;
         }
 
-        final Bitmap bitmap = mBitmapCache.get(url);
+        final Bitmap bitmap = mImageCache.get(url);
         if (bitmap != null) {
             iv.setImageBitmap(bitmap);
             return;
@@ -73,7 +74,7 @@ public class ImageLoader {
             public void run() {
                 Bitmap bitmap=downloadBitmap(url);
                 if (bitmap != null) {
-                    mBitmapCache.put(url, bitmap);
+                    mImageCache.put(url, bitmap);
 
                     if (iv.getTag().equals(url)) {
                         Message message=Message.obtain();
