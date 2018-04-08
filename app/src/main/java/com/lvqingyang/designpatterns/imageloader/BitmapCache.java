@@ -15,20 +15,20 @@ import android.support.v4.util.LruCache;
 public class BitmapCache {
     private LruCache<String, Bitmap> mLruCache;
 
-    public BitmapCache(){
-        mLruCache=new LruCache<String, Bitmap>((int) (Runtime.getRuntime().maxMemory()/1024)){
+    public BitmapCache() {
+        mLruCache = new LruCache<String, Bitmap>((int) (Runtime.getRuntime().maxMemory() / 1024)) {
             @Override
             protected int sizeOf(String key, Bitmap value) {
-                return value.getRowBytes()*value.getHeight()/1024;
+                return value.getRowBytes() * value.getHeight() / 1024;
             }
         };
     }
 
-    public Bitmap put(String url, Bitmap bitmap){
+    public Bitmap put(String url, Bitmap bitmap) {
         return mLruCache.put(url, bitmap);
     }
 
-    public Bitmap get(String url){
+    public Bitmap get(String url) {
         return mLruCache.get(url);
     }
 }

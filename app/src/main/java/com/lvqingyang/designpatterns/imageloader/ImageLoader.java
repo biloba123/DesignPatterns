@@ -23,22 +23,22 @@ import java.util.concurrent.Executors;
  * @blog https://biloba123.github.io/
  */
 public class ImageLoader {
+    private static final String TAG = "ImageLoader";
+    private static volatile ImageLoader sImageLoader;
     private Application mAppContext;
     private ImageCache mImageCache;
     private ExecutorService mExecutor;
-    private static volatile ImageLoader sImageLoader;
-    private static final String TAG = "ImageLoader";
     private Handler mHandler;
 
-    private ImageLoader(Context context){
-        mAppContext= (Application) context.getApplicationContext();
-        mImageCache=new DoubleCache(context);
-        mExecutor= Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        mHandler=new Handler(mAppContext.getMainLooper()){
+    private ImageLoader(Context context) {
+        mAppContext = (Application) context.getApplicationContext();
+        mImageCache = new DoubleCache(context);
+        mExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        mHandler = new Handler(mAppContext.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.obj != null) {
-                    ImageView iv=(ImageView)msg.obj;
+                    ImageView iv = (ImageView) msg.obj;
                     iv.setImageBitmap(mImageCache.get((String) iv.getTag()));
                 }
             }
@@ -46,19 +46,19 @@ public class ImageLoader {
     }
 
 
-    public static ImageLoader getInstance(Context context){
+    public static ImageLoader getInstance(Context context) {
         if (sImageLoader == null) {
-            synchronized (ImageLoader.class){
+            synchronized (ImageLoader.class) {
                 if (sImageLoader == null) {
-                    sImageLoader=new ImageLoader(context);
+                    sImageLoader = new ImageLoader(context);
                 }
             }
         }
         return sImageLoader;
     }
 
-    public void displayImage(final String url, final ImageView iv){
-        if (url == null || url.length()<1) {
+    public void displayImage(final String url, final ImageView iv) {
+        if (url == null || url.length() < 1) {
             return;
         }
 
@@ -72,13 +72,13 @@ public class ImageLoader {
         mExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                Bitmap bitmap=downloadBitmap(url);
+                Bitmap bitmap = downloadBitmap(url);
                 if (bitmap != null) {
                     mImageCache.put(url, bitmap);
 
                     if (iv.getTag().equals(url)) {
-                        Message message=Message.obtain();
-                        message.obj=iv;
+                        Message message = Message.obtain();
+                        message.obj = iv;
                         mHandler.sendMessage(message);
                     }
                 }
@@ -88,15 +88,15 @@ public class ImageLoader {
     }
 
     private Bitmap downloadBitmap(String url) {
-        Bitmap bitmap=null;
-        HttpURLConnection connection=null;
+        Bitmap bitmap = null;
+        HttpURLConnection connection = null;
         try {
-            URL url1=new URL(url);
-            connection= (HttpURLConnection) url1.openConnection();
-            bitmap= BitmapFactory.decodeStream(connection.getInputStream());
+            URL url1 = new URL(url);
+            connection = (HttpURLConnection) url1.openConnection();
+            bitmap = BitmapFactory.decodeStream(connection.getInputStream());
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             connection.disconnect();
         }
 
