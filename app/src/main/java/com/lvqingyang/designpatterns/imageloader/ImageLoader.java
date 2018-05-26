@@ -103,4 +103,7 @@ public class ImageLoader {
         return bitmap;
     }
 
+    public ImageLoader(ImageCache imageCache) {
+        mImageCache = imageCache;
+    }
 }
